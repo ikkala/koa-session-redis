@@ -1,3 +1,7 @@
+version 1.2.0
+===
+add select keySchema support
+
 version 1.1.0
 ===
 add select db support and ttl support
