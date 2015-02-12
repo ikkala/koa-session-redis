@@ -34,7 +34,11 @@ module.exports = function (opts) {
   debug('redis config options: %j', redisOption.options || (redisOption.options = {}));
   debug('redis config db: %s', redisOption.db || (redisOption.db = 0));
   debug('redis config ttl: %s', redisOption.ttl);
-
+  debug('redis config keySchema: %s', redisOption.keySchema || (redisOption.keySchema = ''));
+  if (redisOption.keySchema.length > 0 && redisOption.keySchema.charAt(redisOption.keySchema.length - 1) !== ':') {
+  	redisOption.keySchema += ':';
+  }
+  
   //cookies opts
   cookieOption = opts.cookie || {};
   debug('cookie config all: %j', cookieOption);
@@ -96,7 +100,7 @@ module.exports = function (opts) {
     if (sid) {
       debug('sid %s', sid);
       try {
-        json = yield client.get(sid);
+        json = yield client.get(redisOption.keySchema + sid);
       }catch (e) {
         debug('encounter error %s', e);
         json = null;
@@ -144,14 +148,14 @@ module.exports = function (opts) {
       } else if (false === sess) {
         // remove
         this.cookies.set(key, '', cookieOption);
-        yield client.del(sid);
+        yield client.del(redisOption.keySchema + sid);
       } else if (!json && !sess.length) {
         // do nothing if new and not populated
       } else if (sess.changed(json)) {
         // save
         json = sess.save();
-        yield client.set(sid, json);
-        client.ttl(sid);
+        yield client.set(redisOption.keySchema + sid, json);
+        client.ttl(redisOption.keySchema + sid);
       }
     }
   };
